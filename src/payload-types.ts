@@ -476,28 +476,6 @@ export interface KnowledgeArticle {
         id?: string | null;
       }[]
     | null;
-  vectorState?: {
-    /**
-     * Upstash vector chunk identifiers.
-     */
-    chunkIds?:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
-    /**
-     * Most recent successful embedding sync.
-     */
-    lastSyncedAt?: string | null;
-    /**
-     * Latest synchronization error, if any.
-     */
-    syncError?: string | null;
-  };
   updatedAt: string;
   createdAt: string;
 }
@@ -791,13 +769,6 @@ export interface KnowledgeArticlesSelect<T extends boolean = true> {
     | {
         value?: T;
         id?: T;
-      };
-  vectorState?:
-    | T
-    | {
-        chunkIds?: T;
-        lastSyncedAt?: T;
-        syncError?: T;
       };
   updatedAt?: T;
   createdAt?: T;
