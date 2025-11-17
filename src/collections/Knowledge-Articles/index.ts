@@ -1,20 +1,10 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type {
-  CollectionAfterChangeHook,
-  CollectionAfterDeleteHook,
   CollectionBeforeValidateHook,
   CollectionConfig,
   CollectionSlug,
   Payload,
 } from 'payload'
-
-import {
-  deleteKnowledgeVectors,
-  lexicalToPlainText,
-  syncKnowledgeArticleVectors,
-} from '../../lib/knowledge-vectors'
-
-const SKIP_VECTOR_SYNC_FLAG = 'skipKnowledgeVectorSync'
 
 const slugify = (value: string) =>
   value
@@ -100,7 +90,7 @@ const ensureUniqueSlug = async ({
       return candidate
     }
 
-    if (currentId && conflict.id === currentId) {
+    if (currentId && String(conflict.id) === currentId) {
       return candidate
     }
   }
@@ -156,171 +146,36 @@ const beforeValidate: CollectionBeforeValidateHook = async ({
   return nextData
 }
 
-const extractChunkIds = (input: unknown): string[] => {
-  if (!input || typeof input !== 'object') {
-    return []
-  }
-
-  const maybeGroup = input as {
-    vectorState?: {
-      chunkIds?: unknown
-    }
-  }
-
-  const rawChunkIds = maybeGroup.vectorState?.chunkIds
-
-  if (!Array.isArray(rawChunkIds)) {
-    return []
-  }
-
-  return rawChunkIds
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    .map((value) => value.trim())
-}
-
 const COLLECTION_SLUG = 'knowledge-articles'
 
-const afterChange: CollectionAfterChangeHook = async ({
-  doc,
-  previousDoc,
-  req,
-}) => {
-  req.context ??= {}
-
-  if (req.context[SKIP_VECTOR_SYNC_FLAG]) {
-    return doc
+const lexicalToPlainText = (value: unknown): string => {
+  if (!value || typeof value !== 'object') {
+    return ''
   }
 
-  const vectorState = (doc.vectorState ?? {}) as {
-    chunkIds?: unknown
-    lastSyncedAt?: string | null
-    syncError?: string | null
+  const root = value as { root?: { children?: unknown[] } }
+  if (!root.root?.children) {
+    return ''
   }
 
-  const existingChunkIds = extractChunkIds(doc)
-  const previousChunkIds = extractChunkIds(previousDoc)
-
-  const contentSource = resolveContentSource(doc.contentSource)
-
-  const plainTextBody =
-    typeof doc.plainTextOverride === 'string' && doc.plainTextOverride.trim().length > 0
-      ? doc.plainTextOverride
-      : undefined
-
-  const primaryContent =
-    contentSource === 'richText' ? lexicalToPlainText(doc.content) : plainTextBody ?? ''
-
-  const textSourceCandidates = [
-    typeof doc.title === 'string' ? doc.title : undefined,
-    typeof doc.summary === 'string' ? doc.summary : undefined,
-    primaryContent,
-  ].filter((value): value is string => Boolean(value && value.trim().length > 0))
-
-  const combinedText = textSourceCandidates.join('\n\n').trim()
-  const metadataEntries = Object.entries({
-    title: typeof doc.title === 'string' ? doc.title : undefined,
-    slug: typeof doc.slug === 'string' ? doc.slug : undefined,
-    status: typeof doc.status === 'string' ? doc.status : undefined,
-    summary: typeof doc.summary === 'string' ? doc.summary : undefined,
-    contentSource,
-    sourceDocumentId: resolveRelationshipId(doc.sourceDocument),
-  }).filter(([, value]) => value != null)
-
-  const metadata = Object.fromEntries(metadataEntries)
-
-  const nowIso = new Date().toISOString()
-
-  let nextChunkIds = existingChunkIds
-  let lastSyncedAt = vectorState.lastSyncedAt ?? null
-  let syncError: string | null = null
-
-  try {
-    if (!combinedText) {
-      if (previousChunkIds.length) {
-        await deleteKnowledgeVectors(previousChunkIds)
-      }
-
-      nextChunkIds = []
-      lastSyncedAt = nowIso
-    }
-    else {
-      const { chunkIds } = await syncKnowledgeArticleVectors({
-        articleId: doc.id,
-        text: combinedText,
-        metadata,
-        previousChunkIds,
+  const extractText = (children: unknown[]): string => {
+    return children
+      .map((child: any) => {
+        if (child.type === 'text') {
+          return child.text || ''
+        }
+        if (child.children) {
+          return extractText(child.children)
+        }
+        return ''
       })
-
-      nextChunkIds = chunkIds
-      lastSyncedAt = nowIso
-    }
-  }
-  catch (error) {
-    req.payload.logger?.error?.(
-      {
-        error,
-        articleId: doc.id,
-      },
-      'Failed to synchronize knowledge article embeddings',
-    )
-
-    syncError = error instanceof Error ? error.message : 'Failed to synchronize knowledge article embeddings'
+      .join('')
   }
 
-  const chunkIdsChanged =
-    nextChunkIds.length !== existingChunkIds.length ||
-    nextChunkIds.some((value, index) => value !== existingChunkIds[index])
-
-  if (!chunkIdsChanged && lastSyncedAt === vectorState.lastSyncedAt && syncError === vectorState.syncError) {
-    return doc
-  }
-
-  req.context[SKIP_VECTOR_SYNC_FLAG] = true
-
-  try {
-    await req.payload.update({
-      collection: COLLECTION_SLUG as unknown as CollectionSlug,
-      id: doc.id,
-      data: {
-        vectorState: {
-          chunkIds: nextChunkIds,
-          lastSyncedAt,
-          syncError,
-        },
-      } as any,
-      depth: 0,
-      overrideAccess: true,
-    })
-  }
-  finally {
-    delete req.context[SKIP_VECTOR_SYNC_FLAG]
-  }
-
-  return doc
+  return extractText(root.root.children)
 }
 
-const afterDelete: CollectionAfterDeleteHook = async ({ doc, req }) => {
-  const chunkIds = extractChunkIds(doc)
 
-  if (!chunkIds.length) {
-    return doc
-  }
-
-  try {
-    await deleteKnowledgeVectors(chunkIds)
-  }
-  catch (error) {
-    req.payload.logger?.error?.(
-      {
-        error,
-        articleId: doc?.id,
-      },
-      'Failed to delete knowledge article vectors',
-    )
-  }
-
-  return doc
-}
 
 export const KnowledgeArticles: CollectionConfig = {
   slug: 'knowledge-articles',
@@ -336,8 +191,6 @@ export const KnowledgeArticles: CollectionConfig = {
   timestamps: true,
   hooks: {
     beforeValidate: [beforeValidate],
-    afterChange: [afterChange],
-    afterDelete: [afterDelete],
   },
   fields: [
     {
@@ -464,40 +317,6 @@ export const KnowledgeArticles: CollectionConfig = {
         {
           name: 'value',
           type: 'text',
-        },
-      ],
-    },
-    {
-      name: 'vectorState',
-      type: 'group',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-      },
-      fields: [
-        {
-          name: 'chunkIds',
-          type: 'json',
-          admin: {
-            readOnly: true,
-            description: 'Upstash vector chunk identifiers.',
-          },
-        },
-        {
-          name: 'lastSyncedAt',
-          type: 'date',
-          admin: {
-            readOnly: true,
-            description: 'Most recent successful embedding sync.',
-          },
-        },
-        {
-          name: 'syncError',
-          type: 'textarea',
-          admin: {
-            readOnly: true,
-            description: 'Latest synchronization error, if any.',
-          },
         },
       ],
     },

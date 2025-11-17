@@ -1,13 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import payloadConfig from '@/payload.config'
-
-// In-memory store for active conversations
-const activeConversations = new Map<string, {
-  conversationId?: string
-  transcript: Array<{ timestamp: Date; speaker: 'user' | 'agent'; text: string }>
-  startTime: Date
-}>()
+import { activeConversations } from '@/lib/activeConversations'
 
 /**
  * Vonage Webhook - Receives transcripts and agent responses from the connector
@@ -57,9 +51,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 })
   }
 }
-
-// Export the active conversations map for use in other endpoints
-export { activeConversations }
 
 // Allow GET for testing
 export async function GET() {

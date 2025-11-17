@@ -6,6 +6,7 @@ const nextConfig = {
   experimental: {
     reactCompiler: true,
   },
+  serverExternalPackages: ['sharp'],
   
   // Webpack config to handle Payload CMS dependencies
   //@ts-ignore
