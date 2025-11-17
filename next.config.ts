@@ -3,7 +3,9 @@ import { withPayload } from '@payloadcms/next/withPayload'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Your Next.js config here
-  reactCompiler: true,
+  experimental: {
+    reactCompiler: true,
+  },
   
   // Webpack config to handle Payload CMS dependencies
   webpack: (config: any, { isServer }: { isServer: boolean }) => {
