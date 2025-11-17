@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { sendUploadLink } from '@/lib/vapi/functions/sendUploadLink';
+import { requireAuth } from '@/lib/auth/requireAuth';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { claimNumber, customerId } = body;
+    
+    // Extract conversationId from ElevenLabs custom header (set in tool config)
+    const conversationId = req.headers.get('conversationid') || // ElevenLabs custom header
+                          req.headers.get('x-conversation-id') ||
+                          body.conversationId ||
+                          `customer_${customerId}`; // Fallback: stable per customer
+
+    console.log('\n' + '='.repeat(80));
+    console.log('🔧 ElevenLabs Tool: sendUploadLink');
+    console.log('📥 Input:', { claimNumber, customerId, conversationId });
+
+    // AUTH GUARD: Verify session before sending upload link (if conversationId provided)
+    if (conversationId) {
+      const authCheck = await requireAuth(conversationId, customerId);
+      if (!authCheck.authenticated) {
+        console.log('❌ Authentication failed');
+        console.log('='.repeat(80) + '\n');
+        return authCheck.response!;
+      }
+      console.log('✅ Authentication verified (session-based)');
+    } else {
+      console.warn('⚠️ No conversationId - skipping session verification (legacy mode)');
+    }
+
+    if (!claimNumber) {
+      return NextResponse.json(
+        { error: 'claimNumber is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!customerId) {
+      return NextResponse.json(
+        { error: 'customerId is required - customer must be authenticated first' },
+        { status: 400 }
+      );
+    }
+
+    const result = await sendUploadLink({
+      claimNumber,
+      customerId,
+    });
+
+    console.log('📤 Result:', result.success ? 'Link sent' : result.error);
+    console.log('='.repeat(80) + '\n');
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('sendUploadLink API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

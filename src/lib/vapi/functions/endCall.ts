@@ -5,7 +5,7 @@ interface EndCallParams {
 }
 
 // Tier 2 escalation phone number
-const ESCALATION_PHONE_NUMBER = "+13142304536"; // 314-230-4536
+const ESCALATION_PHONE_NUMBER = process.env.TIER_2_PHONE_NUMBER;
 
 export async function endCall({ 
   reason = "completed", 

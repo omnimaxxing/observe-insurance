@@ -1,0 +1,86 @@
+{
+  "type": "webhook",
+  "name": "Alternative Verification",
+  "description": "Alternative customer verification by email or name+DOB",
+  "api_schema": {
+    "url": "https://YOUR_DOMAIN/api/elevenlabs/alternative-verification",
+    "method": "GET",
+    "path_params_schema": [],
+    "query_params_schema": [
+      {
+        "id": "method",
+        "type": "string",
+        "description": "Verification method: 'email' or 'name_dob'",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt",
+        "enum": ["email", "name_dob"]
+      },
+      {
+        "id": "email",
+        "type": "string",
+        "description": "Customer's email address (required if method='email')",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "firstName",
+        "type": "string",
+        "description": "Customer's first name (required if method='name_dob')",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "lastName",
+        "type": "string",
+        "description": "Customer's last name (required if method='name_dob')",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "dateOfBirth",
+        "type": "string",
+        "description": "Customer's date of birth in YYYY-MM-DD format (required if method='name_dob')",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "callId",
+        "type": "string",
+        "description": "Optional call ID for session tracking",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      }
+    ],
+    "request_body_schema": null,
+    "request_headers": [
+      {
+        "type": "secret",
+        "name": "Authorization",
+        "secret_id": "elevenlabs_api_key"
+      }
+    ],
+    "auth_connection": null
+  },
+  "response_timeout_secs": 20,
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  },
+  "assignments": [],
+  "disable_interruptions": false,
+  "force_pre_tool_speech": "auto",
+  "tool_call_sound": null,
+  "tool_call_sound_behavior": "auto",
+  "execution_mode": "immediate"
+}

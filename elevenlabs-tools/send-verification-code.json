@@ -1,0 +1,67 @@
+{
+  "type": "webhook",
+  "name": "Send Verification Code",
+  "description": "Send email verification code for additional security",
+  "api_schema": {
+    "url": "https://YOUR_DOMAIN/api/elevenlabs/send-verification-code",
+    "method": "GET",
+    "path_params_schema": [],
+    "query_params_schema": [
+      {
+        "id": "email",
+        "type": "string",
+        "description": "Customer's email address where code will be sent",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "customerId",
+        "type": "string",
+        "description": "Customer ID from verification result",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "customerName",
+        "type": "string",
+        "description": "Customer's full name from verification result",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "callId",
+        "type": "string",
+        "description": "Optional call ID for session tracking",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      }
+    ],
+    "request_body_schema": null,
+    "request_headers": [
+      {
+        "type": "secret",
+        "name": "Authorization",
+        "secret_id": "elevenlabs_api_key"
+      }
+    ],
+    "auth_connection": null
+  },
+  "response_timeout_secs": 20,
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  },
+  "assignments": [],
+  "disable_interruptions": false,
+  "force_pre_tool_speech": "auto",
+  "tool_call_sound": null,
+  "tool_call_sound_behavior": "auto",
+  "execution_mode": "immediate"
+}

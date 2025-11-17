@@ -5,19 +5,23 @@ import { sessionStore } from "../session-store";
 
 interface GetClaimStatusParams {
   claimNumber?: string;
-  callId?: string; // Vapi call ID for session management
+  customerId?: number; // For ElevenLabs integration - customer ID passed directly
+  callId?: string; // Vapi call ID for session management (legacy)
 }
 
-export async function getClaimStatus({ claimNumber, callId }: GetClaimStatusParams) {
+export async function getClaimStatus({ claimNumber, customerId, callId }: GetClaimStatusParams) {
   console.log(`\n${"=".repeat(80)}`);
   console.log(`🔧 FUNCTION: getClaimStatus`);
-  console.log(`📥 Input:`, { claimNumber, callId });
+  console.log(`📥 Input:`, { claimNumber, customerId, callId });
   
-  // Get customerId from session instead of requiring it as parameter
-  const customerId = callId ? await sessionStore.getCustomerId(callId) : undefined;
+  // Get customerId from parameter or session (parameter takes priority for ElevenLabs)
+  let finalCustomerId = customerId;
+  if (!finalCustomerId && callId) {
+    finalCustomerId = await sessionStore.getCustomerId(callId);
+  }
   
-  if (!customerId) {
-    console.log(`❌ No authenticated customer in session`);
+  if (!finalCustomerId) {
+    console.log(`❌ No authenticated customer found`);
     console.log(`${"=".repeat(80)}\n`);
     return {
       success: false,
@@ -26,14 +30,14 @@ export async function getClaimStatus({ claimNumber, callId }: GetClaimStatusPara
     };
   }
   
-  console.log(`👤 Customer ID from session: ${customerId}`);
+  console.log(`👤 Customer ID: ${finalCustomerId}`);
 
   const payload = await getPayload({ config: payloadConfig });
 
   const query: any = {
     collection: "claims",
     where: {
-      customer: { equals: customerId },
+      customer: { equals: finalCustomerId },
     },
     // Select only needed fields for performance and clarity
     select: {
@@ -50,7 +54,7 @@ export async function getClaimStatus({ claimNumber, callId }: GetClaimStatusPara
   if (claimNumber) {
     query.where = {
       and: [
-        { customer: { equals: customerId } },
+        { customer: { equals: finalCustomerId } },
         { claimNumber: { equals: claimNumber } },
       ],
     };
@@ -67,7 +71,7 @@ export async function getClaimStatus({ claimNumber, callId }: GetClaimStatusPara
       success: false,
       error: "NO_CLAIMS_FOUND",
       claimNumberSearched: claimNumber,
-      customerId,
+      customerId: finalCustomerId,
       totalClaims: 0,
       suggestion: "escalate",
       message: claimNumber 
@@ -80,33 +84,19 @@ export async function getClaimStatus({ claimNumber, callId }: GetClaimStatusPara
   if (docs.length > 1 && !claimNumber) {
     console.log(`📋 Multiple claims found: ${docs.length}`);
     
-    // Format claims for AI to describe
+    // Format claims with MINIMAL info for conversational listing
+    // Agent should just mention: coverage type, month/year, and status
     const claimsData = docs.map(claim => {
-      // Get most recent case note
-      const mostRecentNote = claim.caseNotes && claim.caseNotes.length > 0
-        ? claim.caseNotes[claim.caseNotes.length - 1]
-        : null;
-      
       return {
-        claimNumber: claim.claimNumber,
-        status: claim.status,
-        description: claim.description,
-        coverageType: claim.coverageType,
-        incidentDate: claim.incidentDate,
-        incidentDateFormatted: claim.incidentDate 
+        claimNumber: claim.claimNumber, // Keep for reference but don't read aloud
+        coverageType: claim.coverageType, // e.g., "Fire Damage", "Tornado Damage"
+        description: claim.description, // Brief description for context
+        incidentMonth: claim.incidentDate 
           ? new Date(claim.incidentDate).toLocaleDateString('en-US', { 
               year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+              month: 'long'
             })
-          : null,
-        amount: claim.amount,
-        amountFormatted: claim.amount ? `$${claim.amount.toLocaleString()}` : null,
-        mostRecentNote: mostRecentNote ? {
-          title: mostRecentNote.title,
-          body: mostRecentNote.body,
-          date: mostRecentNote.createdAt,
-        } : null,
+          : null, // e.g., "October 2025"
       };
     });
     
@@ -119,7 +109,7 @@ export async function getClaimStatus({ claimNumber, callId }: GetClaimStatusPara
       totalClaims: docs.length,
       claims: claimsData,
       message: "Multiple claims found - customer needs to specify which one",
-      instruction: "Describe each claim briefly (status, description/coverage type) and ask which one they're asking about",
+      instruction: "List each claim VERY BRIEFLY using natural language. Example: 'I see one for fire damage from October that's pending, and another for tornado damage from November under review.' Then ask which one they're calling about. DO NOT read claim numbers, amounts, or full descriptions.",
     };
   }
 

@@ -116,7 +116,9 @@ async function handleEndOfCallReport(payload: any) {
   
   if (payload.transcript) {
     console.log("\n📝 Transcript:");
-    console.log(payload.transcript.substring(0, 500) + (payload.transcript.length > 500 ? "..." : ""));
+    // Format transcript for readability - parse and display conversation
+    const lines = payload.transcript.split('\n').filter((line: string) => line.trim());
+    lines.forEach((line: string) => console.log(line));
   }
   
   // End the session for this call
@@ -157,9 +159,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { message } = body;
 
-    console.log(`\n${"=".repeat(80)}`);
-    console.log(`📥 VAPI WEBHOOK: ${message?.type || "unknown"}`);
-    console.log(`${"=".repeat(80)}\n`);
+    // Skip verbose logging for frequent real-time events
+    const silentEvents = [VapiWebhookEvent.SPEECH_UPDATE, VapiWebhookEvent.CONVERSATION_UPDATE];
+    const isSilent = silentEvents.includes(message?.type);
+    
+    if (!isSilent) {
+      console.log(`\n${"=".repeat(80)}`);
+      console.log(`📥 VAPI WEBHOOK: ${message?.type || "unknown"}`);
+      console.log(`${"=".repeat(80)}\n`);
+    }
 
     // Handle different event types
     switch (message?.type) {
@@ -252,7 +260,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(statusResponse);
 
       default:
-        console.log(`ℹ️ Unhandled event type: ${message?.type}`);
+        // Silently acknowledge frequent real-time events
+        if (!isSilent) {
+          console.log(`ℹ️ Unhandled event type: ${message?.type}`);
+        }
         return NextResponse.json({ received: true });
     }
   } catch (error) {

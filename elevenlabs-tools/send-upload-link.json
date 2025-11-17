@@ -1,0 +1,58 @@
+{
+  "type": "webhook",
+  "name": "Send Upload Link",
+  "description": "Send secure document upload link to customer's email",
+  "api_schema": {
+    "url": "https://YOUR_DOMAIN/api/elevenlabs/send-upload-link",
+    "method": "GET",
+    "path_params_schema": [],
+    "query_params_schema": [
+      {
+        "id": "claimNumber",
+        "type": "string",
+        "description": "Claim number to upload documents for",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "customerId",
+        "type": "string",
+        "description": "Customer ID of the authenticated user",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "callId",
+        "type": "string",
+        "description": "Optional call ID for session tracking",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      }
+    ],
+    "request_body_schema": null,
+    "request_headers": [
+      {
+        "type": "secret",
+        "name": "Authorization",
+        "secret_id": "elevenlabs_api_key"
+      }
+    ],
+    "auth_connection": null
+  },
+  "response_timeout_secs": 20,
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  },
+  "assignments": [],
+  "disable_interruptions": false,
+  "force_pre_tool_speech": "auto",
+  "tool_call_sound": null,
+  "tool_call_sound_behavior": "auto",
+  "execution_mode": "immediate"
+}

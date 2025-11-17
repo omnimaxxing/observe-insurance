@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "vapi:setup": "tsx src/lib/vapi/setup-assistant.ts"
+    "vapi:setup": "tsx src/lib/vapi/setup-assistant.ts",
+    "create:elevenlabs-agent": "tsx scripts/create-elevenlabs-agent.ts"
   },
   "dependencies": {
     "@ai-sdk/deepgram": "^1.0.18",
@@ -24,11 +25,13 @@
     "@livekit/agents-plugin-silero": "^1.0.18",
     "@payloadcms/db-vercel-postgres": "^3.64.0",
     "@payloadcms/next": "^3.64.0",
+    "@payloadcms/plugin-search": "^3.64.0",
     "@payloadcms/richtext-lexical": "^3.64.0",
     "@payloadcms/storage-vercel-blob": "^3.64.0",
     "@upstash/redis": "^1.35.6",
     "@upstash/vector": "^1.2.2",
     "@vapi-ai/server-sdk": "^0.10.2",
+    "@vercel/kv": "^3.0.0",
     "ai": "^5.0.93",
     "graphql": "^16.12.0",
     "install": "^0.13.0",

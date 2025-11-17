@@ -1,0 +1,49 @@
+{
+  "type": "webhook",
+  "name": "Search Knowledge Base",
+  "description": "Search insurance policy FAQs and knowledge articles",
+  "api_schema": {
+    "url": "https://YOUR_DOMAIN/api/elevenlabs/search-knowledge-base",
+    "method": "GET",
+    "path_params_schema": [],
+    "query_params_schema": [
+      {
+        "id": "query",
+        "type": "string",
+        "description": "Customer's question or search term about policies/FAQs",
+        "dynamic_variable": "",
+        "required": true,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      },
+      {
+        "id": "callId",
+        "type": "string",
+        "description": "Optional call ID for session tracking",
+        "dynamic_variable": "",
+        "required": false,
+        "constant_value": "",
+        "value_type": "llm_prompt"
+      }
+    ],
+    "request_body_schema": null,
+    "request_headers": [
+      {
+        "type": "secret",
+        "name": "Authorization",
+        "secret_id": "elevenlabs_api_key"
+      }
+    ],
+    "auth_connection": null
+  },
+  "response_timeout_secs": 20,
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  },
+  "assignments": [],
+  "disable_interruptions": false,
+  "force_pre_tool_speech": "auto",
+  "tool_call_sound": null,
+  "tool_call_sound_behavior": "auto",
+  "execution_mode": "immediate"
+}

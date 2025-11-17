@@ -5,6 +5,7 @@ import { sendVerificationCode } from "./sendVerificationCode";
 import { verifyEmailCode } from "./verifyEmailCode";
 import { getClaimStatus } from "./getClaimStatus";
 import { searchKnowledgeBase } from "./searchKnowledgeBase";
+import { sendUploadLink } from "./sendUploadLink";
 import { endCall } from "./endCall";
 
 /**
@@ -19,6 +20,7 @@ export const vapiFunctions = {
   verifyEmailCode,
   getClaimStatus,
   searchKnowledgeBase,
+  sendUploadLink,
   endCall,
 };
 

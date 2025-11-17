@@ -3,13 +3,8 @@
  * Generates and validates one-time codes for email-based authentication
  */
 
-import { Redis } from "@upstash/redis";
+import { kv } from "@vercel/kv";
 import crypto from "crypto";
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
 
 const CODE_LENGTH = 6;
 const CODE_TTL = 300; // 5 minutes in seconds
@@ -62,7 +57,7 @@ export async function storeVerificationCode(
   };
   
   const key = `vapi:verification:${callId}`;
-  await redis.setex(key, CODE_TTL, data);
+  await kv.setex(key, CODE_TTL, JSON.stringify(data));
   
   console.log(`✅ Verification code stored for call ${callId}: ${code} (expires in ${CODE_TTL}s)`);
   
@@ -84,7 +79,9 @@ export async function verifyCode(
   attemptsRemaining?: number;
 }> {
   const key = `vapi:verification:${callId}`;
-  const data = await redis.get<VerificationCodeData>(key);
+  const rawData = await kv.get(key);
+  // Vercel KV auto-parses JSON, so data might already be an object
+  const data = rawData ? (typeof rawData === 'string' ? JSON.parse(rawData) : rawData) as VerificationCodeData : null;
   
   if (!data) {
     console.log(`❌ No verification code found for call ${callId} (expired or never generated)`);
@@ -106,7 +103,7 @@ export async function verifyCode(
   
   if (normalizedProvided === normalizedStored) {
     // Valid code - delete from Redis
-    await redis.del(key);
+    await kv.del(key);
     console.log(`✅ Verification successful for call ${callId}`);
     
     return {
@@ -122,7 +119,7 @@ export async function verifyCode(
   
   if (attemptsRemaining <= 0) {
     // Max attempts reached - delete code
-    await redis.del(key);
+    await kv.del(key);
     console.log(`❌ Max attempts reached for call ${callId} - code invalidated`);
     
     return {
@@ -133,7 +130,7 @@ export async function verifyCode(
   }
   
   // Update attempts count in Redis
-  await redis.setex(key, CODE_TTL, data);
+  await kv.setex(key, CODE_TTL, JSON.stringify(data));
   console.log(`❌ Invalid code for call ${callId} - ${attemptsRemaining} attempts remaining`);
   
   return {
@@ -148,8 +145,8 @@ export async function verifyCode(
  */
 export async function getCodeTTL(callId: string): Promise<number> {
   const key = `vapi:verification:${callId}`;
-  const ttl = await redis.ttl(key);
-  return ttl;
+  const ttl = await kv.ttl(key);
+  return ttl || -1;
 }
 
 /**
@@ -157,6 +154,6 @@ export async function getCodeTTL(callId: string): Promise<number> {
  */
 export async function clearVerificationCode(callId: string): Promise<void> {
   const key = `vapi:verification:${callId}`;
-  await redis.del(key);
+  await kv.del(key);
   console.log(`🗑️ Verification code cleared for call ${callId}`);
 }

@@ -1,28 +1,63 @@
-import { Index } from "@upstash/vector";
+import { getPayload } from "payload";
+import payloadConfig from "@/payload.config";
+import type { KnowledgeArticle } from "@/payload-types";
 
 interface SearchKnowledgeBaseParams {
   query: string;
+  callId?: string;
 }
 
-export async function searchKnowledgeBase({ query }: SearchKnowledgeBaseParams) {
+/**
+ * Search knowledge articles using Payload's search plugin
+ * Searches across indexed title, excerpt, and content fields
+ */
+export async function searchKnowledgeBase({ query, callId }: SearchKnowledgeBaseParams) {
   console.log(`\n${"=".repeat(80)}`);
   console.log(`🔧 FUNCTION: searchKnowledgeBase`);
-  console.log(`📥 Query: ${query}`);
+  console.log(`📥 Input:`, { query, callId });
+
+  if (!query || query.trim().length === 0) {
+    console.log(`❌ Empty query provided`);
+    console.log(`${"=".repeat(80)}\n`);
+    return {
+      success: false,
+      error: "EMPTY_QUERY",
+      message: "Please provide a question or search term",
+    };
+  }
+
+  const payload = await getPayload({ config: payloadConfig });
 
   try {
-    const index = new Index({
-      url: process.env.UPSTASH_VECTOR_REST_URL!,
-      token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
+    // Use the search plugin collection for optimized searching
+    // This searches across title, excerpt, and content fields
+    const { docs } = await payload.find({
+      collection: "search",
+      where: {
+        or: [
+          {
+            title: {
+              like: query,
+            },
+          },
+          {
+            excerpt: {
+              like: query,
+            },
+          },
+          {
+            content: {
+              like: query,
+            },
+          },
+        ],
+      },
+      limit: 3, // Return top 3 results
+      sort: "priority", // Sort by priority (lower number = higher priority)
     });
 
-    const results = await index.query({
-      data: query,
-      topK: 3,
-      includeMetadata: true,
-    });
-
-    if (results.length === 0) {
-      console.log(`❌ No knowledge base results found`);
+    if (docs.length === 0) {
+      console.log(`📭 No articles found for query: "${query}"`);
       console.log(`${"=".repeat(80)}\n`);
       
       return {
@@ -30,44 +65,40 @@ export async function searchKnowledgeBase({ query }: SearchKnowledgeBaseParams) 
         error: "NO_RESULTS",
         query,
         resultsFound: 0,
-        message: "No relevant information found in knowledge base",
+        message: "I couldn't find any articles matching your question",
+        suggestion: "transfer_to_agent",
       };
     }
 
-    const topResult = results[0];
-    const metadata = topResult.metadata as any;
-    const content = metadata?.content || topResult.data;
-
-    console.log(`✅ Found result:`, {
-      title: metadata?.title,
-      score: topResult.score,
-    });
+    // Return the best match from search results
+    const searchResult = docs[0] as any; // Search plugin creates its own type
+    
+    // Extract content from the search result
+    const content = searchResult.content || searchResult.excerpt || "";
+    
+    console.log(`✅ Found article: "${searchResult.title}"`);
+    console.log(`   Priority: ${searchResult.priority}`);
+    console.log(`   Total results: ${docs.length}`);
     console.log(`${"=".repeat(80)}\n`);
 
     return {
       success: true,
-      resultsFound: results.length,
-      query,
-      articleTitle: metadata?.title || "FAQ Answer",
-      content,
-      relevanceScore: topResult.score,
-      confidence: topResult.score > 0.8 ? "high" : topResult.score > 0.6 ? "medium" : "low",
-      additionalResults: results.slice(1, 3).map(r => ({
-        title: (r.metadata as any)?.title,
-        score: r.score,
-      })),
-      message: "Knowledge base information retrieved successfully",
+      articleFound: true,
+      articleTitle: searchResult.title,
+      content: content,
+      excerpt: searchResult.excerpt,
+      totalResults: docs.length,
+      message: "Knowledge article found",
     };
   } catch (error) {
-    console.error("❌ Error searching knowledge base:", error);
+    console.error(`❌ Search error:`, error);
     console.log(`${"=".repeat(80)}\n`);
     
     return {
       success: false,
       error: "SEARCH_ERROR",
       query,
-      errorDetails: error instanceof Error ? error.message : "Unknown error",
-      message: "Error accessing knowledge base",
+      message: "An error occurred while searching the knowledge base",
     };
   }
 }

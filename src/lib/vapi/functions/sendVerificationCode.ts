@@ -63,7 +63,7 @@ export async function sendVerificationCode({
 
     // Send email via Resend
     const emailResult = await resend.emails.send({
-      from: 'Observe Insurance <verify@observeinsurance.com>',
+      from: 'Observe Insurance <verify@observe-insurance.com>',
       to: email,
       subject: 'Your Verification Code - Observe Insurance',
       html: `

@@ -44,6 +44,9 @@ importers:
       '@payloadcms/next':
         specifier: ^3.64.0
         version: 3.64.0(@types/react@19.2.5)(graphql@16.12.0)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      '@payloadcms/plugin-search':
+        specifier: ^3.64.0
+        version: 3.64.0(@types/react@19.2.5)(graphql@16.12.0)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@payloadcms/richtext-lexical':
         specifier: ^3.64.0
         version: 3.64.0(@faceless-ui/modal@3.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@faceless-ui/scroll-info@2.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@payloadcms/next@3.64.0(@types/react@19.2.5)(graphql@16.12.0)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(@types/react@19.2.5)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(yjs@13.6.27)
@@ -59,6 +62,9 @@ importers:
       '@vapi-ai/server-sdk':
         specifier: ^0.10.2
         version: 0.10.2
+      '@vercel/kv':
+        specifier: ^3.0.0
+        version: 3.0.0
       ai:
         specifier: ^5.0.93
         version: 5.0.93(zod@4.1.12)
@@ -1496,6 +1502,13 @@ packages:
       react: ^19.0.0 || ^19.0.0-rc-65a56d0e-20241020
       react-dom: ^19.0.0 || ^19.0.0-rc-65a56d0e-20241020
 
+  '@payloadcms/plugin-search@3.64.0':
+    resolution: {integrity: sha512-xZe4O8sorzp3paCVpxFzK+WD+oc3EUxSjQ2epiAdG+W+UIB8o4moWYfWxmClkSjtG5F70CQrNUiSohr/kpeQHw==}
+    peerDependencies:
+      payload: 3.64.0
+      react: ^19.0.0 || ^19.0.0-rc-65a56d0e-20241020
+      react-dom: ^19.0.0 || ^19.0.0-rc-65a56d0e-20241020
+
   '@payloadcms/richtext-lexical@3.64.0':
     resolution: {integrity: sha512-EqYrc+KDGwYTdNPm0SkBGWh244ZkeFwtfj6Slgeu/fVBzEl7Tbh+mydovokSwKag1nw28vfEhXMIUH/PtLKqFw==}
     engines: {node: ^18.20.2 || >=20.9.0}
@@ -1885,6 +1898,10 @@ packages:
 
   '@vercel/introspection@0.0.2':
     resolution: {integrity: sha512-PcTrmmF31mYYMoY9EntZpBBexPqHy927VdA1XIqXCyjvmQV28Q+3kS/WaTQny9IppNs8itOHwg9/N4I9phcbJw==}
+
+  '@vercel/kv@3.0.0':
+    resolution: {integrity: sha512-pKT8fRnfyYk2MgvyB6fn6ipJPCdfZwiKDdw7vB+HL50rjboEBHDVBEcnwfkEpVSp2AjNtoaOUH7zG+bVC/rvSg==}
+    engines: {node: '>=14.6'}
 
   '@vercel/next@4.15.3':
     resolution: {integrity: sha512-YRN6QL7WLNHMqWn+a3MdQ1/kK7NbM9lylgFFwoVVzKiC0WhTpahWUQo8iWgSbnhdYl9z8ruF4QLyYJillIXmhw==}
@@ -5867,6 +5884,21 @@ snapshots:
       - supports-color
       - typescript
 
+  '@payloadcms/plugin-search@3.64.0(@types/react@19.2.5)(graphql@16.12.0)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
+    dependencies:
+      '@payloadcms/next': 3.64.0(@types/react@19.2.5)(graphql@16.12.0)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      '@payloadcms/ui': 3.64.0(@types/react@19.2.5)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      payload: 3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - graphql
+      - monaco-editor
+      - next
+      - supports-color
+      - typescript
+
   '@payloadcms/richtext-lexical@3.64.0(@faceless-ui/modal@3.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@faceless-ui/scroll-info@2.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@payloadcms/next@3.64.0(@types/react@19.2.5)(graphql@16.12.0)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(@types/react@19.2.5)(monaco-editor@0.54.0)(next@16.0.3(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.77.4))(payload@3.64.0(bufferutil@4.0.9)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(yjs@13.6.27)':
     dependencies:
       '@faceless-ui/modal': 3.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -6370,6 +6402,10 @@ snapshots:
     dependencies:
       path-to-regexp: 8.3.0
       zod: 3.22.4
+
+  '@vercel/kv@3.0.0':
+    dependencies:
+      '@upstash/redis': 1.35.6
 
   '@vercel/next@4.15.3':
     dependencies:

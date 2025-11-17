@@ -94,6 +94,20 @@ const normalizePhoneNumber = (raw: unknown): string | undefined => {
 const normalizePhoneHook: FieldHook = ({ value }: HookArgs) =>
   normalizePhoneNumber(value) ?? undefined
 
+const normalizeEmailHook: FieldHook = ({ value }: HookArgs) => {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+  
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return undefined
+  }
+  
+  // Normalize to lowercase for case-insensitive matching
+  return trimmed.toLowerCase()
+}
+
 const deriveFullNameHook: FieldHook = ({ siblingData, originalDoc, value }: HookArgs) => {
   const firstName =
     (typeof siblingData?.firstName === 'string' && siblingData.firstName.trim())
@@ -200,7 +214,10 @@ export const Customers: CollectionConfig = {
         unique: true,
         admin: {
             description: 'Email of the customer',
-        }
+        },
+        hooks: {
+          beforeValidate: [normalizeEmailHook],
+        },
     },
     {
         name: 'phone',

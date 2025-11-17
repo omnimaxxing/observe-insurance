@@ -84,8 +84,8 @@ async function verifyByEmail(email: string, callId?: string) {
   
   const payload = await getPayload({ config: payloadConfig });
   
-  // Require EXACT email match for security
-  // Fuzzy matching for authentication is a security risk
+  // Search with case-insensitive matching
+  // Note: Database stores emails in lowercase via normalization hook
   const { docs } = (await payload.find({
     collection: "customers",
     limit: 1,

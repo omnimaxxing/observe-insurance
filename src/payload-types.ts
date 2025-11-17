@@ -70,8 +70,10 @@ export interface Config {
     users: User;
     customers: Customer;
     claims: Claim;
+    conversations: Conversation;
     'knowledge-articles': KnowledgeArticle;
     media: Media;
+    search: Search;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,8 +84,10 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
     claims: ClaimsSelect<false> | ClaimsSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     'knowledge-articles': KnowledgeArticlesSelect<false> | KnowledgeArticlesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -287,6 +291,135 @@ export interface Media {
   focalY?: number | null;
 }
 /**
+ * Call recordings and transcripts from ElevenLabs Conversational AI
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: number;
+  /**
+   * ElevenLabs conversation ID
+   */
+  conversationId: string;
+  /**
+   * ElevenLabs agent ID
+   */
+  agentId: string;
+  /**
+   * Linked customer if identified during call
+   */
+  customer?: (number | null) | Customer;
+  /**
+   * Customer name from conversation (if not linked to customer record)
+   */
+  customerName?: string | null;
+  /**
+   * Phone number from Vonage
+   */
+  customerPhone?: string | null;
+  /**
+   * Vonage call UUID
+   */
+  callUuid?: string | null;
+  /**
+   * Vonage conversation UUID
+   */
+  conversationUuid?: string | null;
+  status: 'in_progress' | 'completed' | 'failed' | 'disconnected';
+  /**
+   * Call duration in seconds
+   */
+  duration?: number | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  /**
+   * Full conversation transcript
+   */
+  transcript?:
+    | {
+        timestamp?: string | null;
+        speaker: 'user' | 'agent';
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * AI-generated summary of the conversation
+   */
+  summary?: string | null;
+  /**
+   * List of tools/functions called during conversation
+   */
+  toolsCalled?:
+    | {
+        toolName: string;
+        timestamp?: string | null;
+        parameters?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        result?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Additional conversation metadata
+   */
+  metadata?: {
+    authenticated?: boolean | null;
+    verificationMethod?: ('phone' | 'email' | 'name_dob' | 'none') | null;
+    /**
+     * Claim numbers mentioned in conversation
+     */
+    claimsDiscussed?:
+      | {
+          claimNumber?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    intent?: ('claim_status' | 'file_claim' | 'upload_documents' | 'general_inquiry' | 'other') | null;
+    sentiment?: ('positive' | 'neutral' | 'negative') | null;
+  };
+  /**
+   * Call analytics and metrics
+   */
+  analytics?: {
+    totalMessages?: number | null;
+    userMessages?: number | null;
+    agentMessages?: number | null;
+    averageResponseTime?: number | null;
+    interruptionCount?: number | null;
+  };
+  /**
+   * Raw webhook payload from ElevenLabs
+   */
+  rawData?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Knowledge base content powering FAQ responses.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -369,6 +502,31 @@ export interface KnowledgeArticle {
   createdAt: string;
 }
 /**
+ * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search".
+ */
+export interface Search {
+  id: number;
+  title?: string | null;
+  priority?: number | null;
+  doc: {
+    relationTo: 'knowledge-articles';
+    value: number | KnowledgeArticle;
+  };
+  /**
+   * Short excerpt for search results
+   */
+  excerpt?: string | null;
+  /**
+   * Full searchable content
+   */
+  content?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -405,12 +563,20 @@ export interface PayloadLockedDocument {
         value: number | Claim;
       } | null)
     | ({
+        relationTo: 'conversations';
+        value: number | Conversation;
+      } | null)
+    | ({
         relationTo: 'knowledge-articles';
         value: number | KnowledgeArticle;
       } | null)
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'search';
+        value: number | Search;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -548,6 +714,67 @@ export interface ClaimsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  conversationId?: T;
+  agentId?: T;
+  customer?: T;
+  customerName?: T;
+  customerPhone?: T;
+  callUuid?: T;
+  conversationUuid?: T;
+  status?: T;
+  duration?: T;
+  startTime?: T;
+  endTime?: T;
+  transcript?:
+    | T
+    | {
+        timestamp?: T;
+        speaker?: T;
+        text?: T;
+        id?: T;
+      };
+  summary?: T;
+  toolsCalled?:
+    | T
+    | {
+        toolName?: T;
+        timestamp?: T;
+        parameters?: T;
+        result?: T;
+        id?: T;
+      };
+  metadata?:
+    | T
+    | {
+        authenticated?: T;
+        verificationMethod?: T;
+        claimsDiscussed?:
+          | T
+          | {
+              claimNumber?: T;
+              id?: T;
+            };
+        intent?: T;
+        sentiment?: T;
+      };
+  analytics?:
+    | T
+    | {
+        totalMessages?: T;
+        userMessages?: T;
+        agentMessages?: T;
+        averageResponseTime?: T;
+        interruptionCount?: T;
+      };
+  rawData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "knowledge-articles_select".
  */
 export interface KnowledgeArticlesSelect<T extends boolean = true> {
@@ -592,6 +819,19 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search_select".
+ */
+export interface SearchSelect<T extends boolean = true> {
+  title?: T;
+  priority?: T;
+  doc?: T;
+  excerpt?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
