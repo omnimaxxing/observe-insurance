@@ -8,19 +8,18 @@ const nextConfig = {
   },
   
   // Webpack config to handle Payload CMS dependencies
-  webpack: (config: any, { isServer }: { isServer: boolean }) => {
-    if (isServer) {
-      config.externals = config.externals || []
-      config.externals.push({
-        'thread-stream': 'commonjs thread-stream',
-        'pino': 'commonjs pino',
-        'pino-pretty': 'commonjs pino-pretty',
-      })
+  //@ts-ignore
+webpack: (webpackConfig) => {
+    webpackConfig.resolve.extensionAlias = {
+      '.cjs': ['.cts', '.cjs'],
+      '.js': ['.ts', '.tsx', '.js', '.jsx'],
+      '.mjs': ['.mts', '.mjs'],
     }
-    return config
+
+    return webpackConfig
   },
 }
 
 // Make sure you wrap your `nextConfig`
 // with the `withPayload` plugin
-export default withPayload(nextConfig) 
+export default withPayload(nextConfig, { devBundleServerPackages: false }) 
