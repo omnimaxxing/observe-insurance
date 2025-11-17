@@ -5,14 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "cross-env NODE_OPTIONS=--no-deprecation migrate && next build",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation payload migrate && next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
     "vapi:setup": "tsx src/lib/vapi/setup-assistant.ts",
     "create:elevenlabs-agent": "tsx scripts/create-elevenlabs-agent.ts",
-    "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
-      "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
   },
   "dependencies": {
     "@ai-sdk/deepgram": "^1.0.18",
